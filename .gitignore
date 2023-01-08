@@ -1,0 +1,15 @@
+node_modules/
+build/
+src/services/service-account.json
+npm-debug.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.orig.*
+web-build/
+.env.local
+
+# macOS
+.DS_Store
