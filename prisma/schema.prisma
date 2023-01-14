@@ -1,0 +1,109 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// url      = env("DATABASE_URL")
+
+datasource db {
+  provider = "sqlite"
+  url      = env("PRISMA_DATABASE_URL")
+}
+
+model User {
+  id           Int     @id @unique
+  uid          String  @unique
+  phone        String  @unique
+  subscription String?
+
+  store         Runchit[]
+  eligibilities StoreMember[]
+}
+
+model Runchit {
+  id        Int      @id @unique @default(autoincrement())
+  name      String
+  duitnowqr String
+  createdAt DateTime @default(now())
+
+  ownerId String
+  owner   User   @relation(fields: [ownerId], references: [uid])
+
+  members  StoreMember[]
+  roles    StoreRole[]
+  products Product[]
+}
+
+model StoreRole {
+  id         Int     @id @unique @default(autoincrement())
+  name       String
+  permission String?
+
+  storeId Int
+  store   Runchit @relation(fields: [storeId], references: [id])
+
+  members StoreMember[]
+}
+
+model StoreMember {
+  // id Int @id @unique @default(autoincrement())
+
+  storeId Int
+  store   Runchit @relation(fields: [storeId], references: [id])
+
+  roleId Int
+  role   StoreRole @relation(fields: [roleId], references: [id])
+
+  memberId String
+  members  User   @relation(fields: [memberId], references: [uid])
+
+  @@id([roleId, memberId])
+}
+
+model Inventory {
+  id Int @id @unique @default(autoincrement())
+}
+
+model Product {
+  id    Int    @id @unique @default(autoincrement())
+  name  String
+  price Float
+  sku   String //barcode
+
+  storeId Int
+  store   Runchit @relation(fields: [storeId], references: [id])
+
+  supplierId Int
+  supplier   Supplier @relation(fields: [supplierId], references: [id])
+
+  categoryId Int
+  category   ProductCategory @relation(fields: [categoryId], references: [id])
+
+  attirbutes ProductAttribute[]
+}
+
+model ProductAttribute {
+  id    Int    @id @unique @default(autoincrement())
+  name  String
+  value String
+
+  productId Int
+  product   Product @relation(fields: [productId], references: [id])
+}
+
+model ProductCategory {
+  id   Int    @id @unique @default(autoincrement())
+  name String
+
+  products Product[]
+}
+
+model Supplier {
+  id      Int    @id @unique @default(autoincrement())
+  name    String
+  contact String
+
+  products Product[]
+}
