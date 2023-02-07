@@ -12,5 +12,6 @@ app.use(express.urlencoded({ extended: false }))
 app.get("/", (req, res) => res.send("Welcome to Runchit api"))
 
 app.listen(3003, () => {
+    console.log("server started")
     routes(app)
 })

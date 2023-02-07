@@ -24,10 +24,14 @@ export default function (
     getAuthToken(req, res, async () => {
         try {
             const { authToken } = req
-            if (!authToken) return res.status(403).send({ error: 'You are not authorized to make this request' })
-            const userInfo = await auth.getAuth().verifyIdToken(authToken)
-            req.authId = userInfo.uid
-            return next()
+            if (!authToken) return res.status(401).send({ error: 'You are not authorized to make this request' })
+            auth.getAuth().verifyIdToken(authToken, true)
+                .then(userInfo => {
+                    req.authId = userInfo.uid
+                    req.userPhone = userInfo.phone_number ?? ""
+
+                    return next()
+                }).catch(e => res.status(403).send({ error: 'Something wrong while verifying your access. Relogin might resolve your issue. ' + e }))
         } catch (error) {
             // console.log({ error })
             return res.status(501).send({ error })

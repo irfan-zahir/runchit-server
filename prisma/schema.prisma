@@ -13,8 +13,8 @@ datasource db {
 }
 
 model User {
-  id           Int     @id @unique
-  uid          String  @unique
+  id           Int     @id @unique @default(autoincrement())
+  uid          String? @unique
   phone        String  @unique
   subscription String?
 
