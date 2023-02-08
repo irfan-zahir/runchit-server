@@ -13,23 +13,21 @@ datasource db {
 }
 
 model User {
-  id           Int     @id @unique @default(autoincrement())
+  id           String  @id @unique @default(cuid())
   uid          String? @unique
   phone        String  @unique
   subscription String?
+  fullName     String
 
-  store         Runchit[]
-  eligibilities StoreMember[]
+  memberOf StoreMember[]
 }
 
 model Runchit {
-  id        Int      @id @unique @default(autoincrement())
+  id        String   @id @unique @default(cuid())
   name      String
-  duitnowqr String
+  duitnowqr String?
+  address   String?
   createdAt DateTime @default(now())
-
-  ownerId String
-  owner   User   @relation(fields: [ownerId], references: [uid])
 
   members  StoreMember[]
   roles    StoreRole[]
@@ -37,42 +35,41 @@ model Runchit {
 }
 
 model StoreRole {
-  id         Int     @id @unique @default(autoincrement())
+  id         String  @id @unique @default(cuid())
   name       String
   permission String?
 
-  storeId Int
+  storeId String
   store   Runchit @relation(fields: [storeId], references: [id])
 
   members StoreMember[]
 }
 
 model StoreMember {
-  // id Int @id @unique @default(autoincrement())
+  id String @id @unique @default(cuid())
 
-  storeId Int
+  storeId String
   store   Runchit @relation(fields: [storeId], references: [id])
 
-  roleId Int
-  role   StoreRole @relation(fields: [roleId], references: [id])
+  memberId String?
+  members  User?   @relation(fields: [memberId], references: [uid])
 
-  memberId String
-  members  User   @relation(fields: [memberId], references: [uid])
+  roles StoreRole[]
 
-  @@id([roleId, memberId])
+  // @@id([storeId, memberId])
 }
 
 model Inventory {
-  id Int @id @unique @default(autoincrement())
+  id String @id @unique @default(cuid())
 }
 
 model Product {
-  id    Int    @id @unique @default(autoincrement())
+  id    String @id @unique @default(cuid())
   name  String
   price Float
   sku   String //barcode
 
-  storeId Int
+  storeId String
   store   Runchit @relation(fields: [storeId], references: [id])
 
   supplierId Int
@@ -89,7 +86,7 @@ model ProductAttribute {
   name  String
   value String
 
-  productId Int
+  productId String
   product   Product @relation(fields: [productId], references: [id])
 }
 

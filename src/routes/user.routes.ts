@@ -5,4 +5,6 @@ const routes = Router()
 
 routes.get("/", userController.index)
 
+routes.post("/registration", userController.ownerRegistration)
+
 export default routes
