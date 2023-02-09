@@ -33,43 +33,46 @@ export const userController = {
 
         try {
 
-            const createdUser = await prisma.user.create({
+            const result = await prisma.user.create({
                 data: { fullName, uid, phone }
+            }).then(async createdUser => {
+
+                const createdStores = await Promise.all(
+                    shops.map(async store => {
+                        const createdStore = await prisma.runchit.create({
+                            data: store,
+                        })
+
+                        const role = await prisma.storeRole.create({
+                            data: {
+                                name: "Owner",
+                                store: { connect: { id: createdStore.id } }
+                            }
+                        })
+
+                        const member = await prisma.storeMember.create({
+                            data: {
+                                store: { connect: { id: createdStore.id } },
+                                members: { connect: { uid: createdUser.uid! } }
+                            }
+                        })
+
+                        const updatedStore = await prisma.runchit.update({
+                            where: { id: createdStore.id },
+                            data: {
+                                roles: { connect: { id: role.id } },
+                                members: { connect: { id: member.id } }
+                            },
+                        })
+
+                        return updatedStore
+                    })
+                )
+
+                return { user: createdUser, stores: createdStores }
             })
 
-            const createdStores = await Promise.all(
-                shops.map(async store => {
-                    const createdStore = await prisma.runchit.create({
-                        data: store,
-                    })
-
-                    const role = await prisma.storeRole.create({
-                        data: {
-                            name: "Owner",
-                            store: { connect: { id: createdStore.id } }
-                        }
-                    })
-
-                    const member = await prisma.storeMember.create({
-                        data: {
-                            store: { connect: { id: createdStore.id } },
-                            members: { connect: { uid: createdUser.uid! } }
-                        }
-                    })
-
-                    const updatedStore = await prisma.runchit.update({
-                        where: { id: createdStore.id },
-                        data: {
-                            roles: { connect: { id: role.id } },
-                            members: { connect: { id: member.id } }
-                        },
-                    })
-
-                    return updatedStore
-                })
-            )
-
-            res.status(200).json({ user: createdUser, stores: createdStores })
+            res.status(200).json({ ...result })
         } catch (error) {
             console.error(error)
             res.status(500).json({ error })

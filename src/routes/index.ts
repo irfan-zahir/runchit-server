@@ -2,6 +2,7 @@ import { default as express, Express, NextFunction, Request, Response } from "ex
 import verifyAuthentication from "../middleware/verifyAuthentication";
 
 import userRoutes from "./user.routes"
+import storeRoutes from "./store.routes"
 
 export default function (app: Express) {
     const apiRouter = express.Router()
@@ -13,6 +14,8 @@ export default function (app: Express) {
     })
 
     app.use("/api/v1", verifyAuthentication, apiRouter)
+
     apiRouter.use("/user", userRoutes)
+    apiRouter.use("/store", storeRoutes)
 }
 
