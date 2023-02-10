@@ -11,16 +11,20 @@ interface ICreateUserRequest extends Request {
     body: ICreateUserBody
 }
 
-export const userController = {
+const baseSelection = {
+    fullName: true, subscription: true, uid: true
+}
 
+export const userController = {
     // use in first time entering mobile apps
     // get current user from phone number / authId(uid)
     async index(req: Request, res: Response) {
-        const { userPhone, authId, authToken } = req
+        const { userPhone, authId, authToken, currentStore } = req
 
         const currentUser = await prisma.user.findUnique({
             where: { uid: authId },
-            include: { memberOf: true }
+            // include: { memberOf: true },
+            select: { ...baseSelection, memberOf: { where: { storeId: currentStore ? { equals: currentStore } : { not: undefined } } } }
         })
 
         if (currentUser === null) return res.status(307).json({ message: "new-user" })
@@ -34,9 +38,8 @@ export const userController = {
         try {
 
             const result = await prisma.user.create({
-                data: { fullName, uid, phone }
+                data: { fullName, uid, phone },
             }).then(async createdUser => {
-
                 const createdStores = await Promise.all(
                     shops.map(async store => {
                         const createdStore = await prisma.runchit.create({
@@ -53,7 +56,7 @@ export const userController = {
                         const member = await prisma.storeMember.create({
                             data: {
                                 store: { connect: { id: createdStore.id } },
-                                members: { connect: { uid: createdUser.uid! } }
+                                members: { connect: { uid } }
                             }
                         })
 

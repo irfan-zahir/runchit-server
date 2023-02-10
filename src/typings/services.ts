@@ -3,5 +3,6 @@ declare namespace Express {
         authToken?: string | null;
         authId?: string;
         userPhone: string;
+        currentStore: string | undefined
     }
 }
