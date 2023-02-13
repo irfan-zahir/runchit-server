@@ -40,7 +40,7 @@ model StoreRole {
   permission String?
 
   storeId String
-  store   Runchit @relation(fields: [storeId], references: [id])
+  store   Runchit @relation(fields: [storeId], references: [id], onDelete: Cascade)
 
   members StoreMember[]
 }
@@ -49,56 +49,80 @@ model StoreMember {
   id String @id @unique @default(cuid())
 
   storeId String
-  store   Runchit @relation(fields: [storeId], references: [id])
+  store   Runchit @relation(fields: [storeId], references: [id], onDelete: Cascade)
 
   memberId String?
-  members  User?   @relation(fields: [memberId], references: [uid])
+  members  User?   @relation(fields: [memberId], references: [uid], onDelete: Cascade)
 
   roles StoreRole[]
-
-  // @@id([storeId, memberId])
-}
-
-model Inventory {
-  id String @id @unique @default(cuid())
 }
 
 model Product {
   id    String @id @unique @default(cuid())
   name  String
   price Float
-  sku   String //barcode
+
+  inventory ProductInventory?
 
   storeId String
-  store   Runchit @relation(fields: [storeId], references: [id])
+  store   Runchit @relation(fields: [storeId], references: [id], onDelete: Cascade)
 
-  supplierId Int
-  supplier   Supplier @relation(fields: [supplierId], references: [id])
+  supplierId String?
+  supplier   Supplier? @relation(fields: [supplierId], references: [id], onDelete: SetNull)
 
-  categoryId Int
-  category   ProductCategory @relation(fields: [categoryId], references: [id])
+  categoryId String?
+  category   ProductCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
 
-  attirbutes ProductAttribute[]
+  images ProductImages[]
+  sku    ProductSku[]
+}
+
+model ProductInventory {
+  id       String  @id @unique @default(cuid())
+  shelf    Decimal @default(0)
+  storage  Decimal @default(0)
+  location String  @default("")
+
+  productId String  @unique
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+}
+
+model ProductImages {
+  id  String @id @unique @default(cuid())
+  url String
+
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+}
+
+model ProductSku {
+  id  String @id @unique @default(cuid())
+  sku String
+
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  attributes ProductAttribute[]
 }
 
 model ProductAttribute {
-  id    Int    @id @unique @default(autoincrement())
+  id    String @id @unique @default(cuid())
   name  String
   value String
 
-  productId String
-  product   Product @relation(fields: [productId], references: [id])
+  skuId String
+  sku   ProductSku @relation(fields: [skuId], references: [id], onDelete: Cascade)
 }
 
 model ProductCategory {
-  id   Int    @id @unique @default(autoincrement())
+  id   String @id @unique @default(cuid())
   name String
 
   products Product[]
 }
 
 model Supplier {
-  id      Int    @id @unique @default(autoincrement())
+  id      String @id @unique @default(cuid())
   name    String
   contact String
 
