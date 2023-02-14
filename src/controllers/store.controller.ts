@@ -1,13 +1,13 @@
 import { Request, Response } from "express";
 import prisma from "../services/prisma"
-import { Runchit, User } from "@prisma/client"
+import { Runchit } from "@prisma/client"
 
-interface ICreateUserBody {
+interface ICreateStoreBody {
     stores: Array<Runchit>
 }
 
-interface ICreateUserRequest extends Request {
-    body: ICreateUserBody
+interface ICreateStoreRequest extends Request {
+    body: ICreateStoreBody
 }
 
 export const storeController = {
@@ -24,7 +24,7 @@ export const storeController = {
             res.status(500).json({ error: `Unexpected error occured while fetching stores. ${error}` })
         }
     },
-    async create(req: ICreateUserRequest, res: Response) {
+    async create(req: ICreateStoreRequest, res: Response) {
         try {
             const { authId: uid } = req
             const { stores } = req.body
