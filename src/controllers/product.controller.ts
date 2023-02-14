@@ -92,7 +92,10 @@ export const productController = {
                     }).then(_=>prisma.product.findUnique({where: {id: createdProduct.id}}))
                 )
             )
+            res.status(200).json({product: createdProduct})
         } catch (error) {
+            console.error(`Unexpected error occured while creating this product. ${error}`)
+            res.status(500).json({ error: `Unexpected error occured while creating this product. ${error}` })
             
         }
     }

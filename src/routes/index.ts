@@ -4,6 +4,7 @@ import getCurrentStoreInHeader from "../middleware/getCurrentStore";
 
 import userRoutes from "./user.routes"
 import storeRoutes from "./store.routes"
+import productRoutes from "./product.routes"
 
 export default function (app: Express) {
     const apiRouter = express.Router()
@@ -16,5 +17,6 @@ export default function (app: Express) {
 
     apiRouter.use("/user", userRoutes)
     apiRouter.use("/store", storeRoutes)
+    apiRouter.use("/product", productRoutes)
 }
 
