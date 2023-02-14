@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import prisma from "../services/prisma"
 import { Product } from "@prisma/client"
 
-type IProductAttribute = {name: string; value: string}
+type IProductAttribute = { name: string; value: string }
 interface ICreateProductBody {
     name: string;
     sku: string;
@@ -12,8 +12,8 @@ interface ICreateProductBody {
     supplier: string;
 }
 
-interface ICreateProductRequest extends Request{
-    body: {product: ICreateProductBody}
+interface ICreateProductRequest extends Request {
+    body: { product: ICreateProductBody }
 }
 
 export const productController = {
@@ -24,7 +24,7 @@ export const productController = {
                 where: { storeId: { equals: currentStore } },
             })
 
-            res.status(200).json({ products })
+            res.status(200).json(products)
         } catch (error) {
             console.error(`Unexpected error occured while fetching products. ${error}`)
             res.status(500).json({ error: `Unexpected error occured while fetching products. ${error}` })
@@ -43,10 +43,10 @@ export const productController = {
             res.status(500).json({ error: `Unexpected error occured while fetching products with this sku. ${error}` })
         }
     },
-    async findProductUnique(req: Request, res: Response){
+    async findProductUnique(req: Request, res: Response) {
         try {
             const productId = req.params.id
-            
+
             const product = prisma.product.findUnique({
                 where: { id: productId }
             })
@@ -57,46 +57,46 @@ export const productController = {
             res.status(500).json({ error: `Unexpected error occured while fetching this product. ${error}` })
         }
     },
-    async createProduct(req: ICreateProductRequest, res: Response){
+    async createProduct(req: ICreateProductRequest, res: Response) {
         try {
             const { currentStore } = req
-            const {product: {quantity, attributes, supplier, sku, name, price}} = req.body
+            const { product: { quantity, attributes, supplier, sku, name, price } } = req.body
             const createdProduct = await prisma.product.create({
                 data: {
-                    name, price: +price, store: {connect: {id: currentStore}}
+                    name, price: +price, store: { connect: { id: currentStore } }
                 }
-            }).then(createdProduct=>
+            }).then(createdProduct =>
                 prisma.productInventory.create({
                     data: {
-                        storage: quantity, product: {connect: {id: createdProduct.id}}
+                        storage: quantity, product: { connect: { id: createdProduct.id } }
                     }
                 }).then(createdInventory =>
                     prisma.productSku.create({
-                        data: {sku, product:{connect: {id: createdProduct.id}}}
-                    }).then(async createdSku=>{
-                        if(attributes.length > 0){
+                        data: { sku, product: { connect: { id: createdProduct.id } } }
+                    }).then(async createdSku => {
+                        if (attributes.length > 0 && Object.keys(attributes[0]).length !== 0) {
                             await Promise.all(
-                                attributes.map(({name, value})=> prisma.productAttribute.create({
+                                attributes.map(({ name, value }) => prisma.productAttribute.create({
                                     data: {
-                                        name, value, sku: {connect: {id: createdSku.id}}
+                                        name, value, sku: { connect: { id: createdSku.id } }
                                     }
                                 }))
                             )
                         }
 
-                        if(supplier && supplier !== ""){
+                        if (supplier && supplier !== "") {
                             await prisma.supplier.create({
-                                data: {name, contact: "", products: {connect: {id: createdProduct.id}}}
+                                data: { name, contact: "", products: { connect: { id: createdProduct.id } } }
                             })
                         }
-                    }).then(_=>prisma.product.findUnique({where: {id: createdProduct.id}}))
+                    }).then(_ => prisma.product.findUnique({ where: { id: createdProduct.id } }))
                 )
             )
-            res.status(200).json({product: createdProduct})
+            res.status(200).json({ product: createdProduct })
         } catch (error) {
             console.error(`Unexpected error occured while creating this product. ${error}`)
             res.status(500).json({ error: `Unexpected error occured while creating this product. ${error}` })
-            
+
         }
     }
 } 
