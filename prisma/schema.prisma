@@ -58,11 +58,14 @@ model StoreMember {
 }
 
 model Product {
-  id    String @id @unique @default(cuid())
-  name  String
-  price Float
-
-  inventory ProductInventory?
+  id              String  @id @unique @default(cuid())
+  name            String
+  purchase        Float
+  sellPrice       Float
+  sku             String?
+  quantityUnit    String?
+  shelfQuantity   Decimal @default(0)
+  storageQuantity Decimal @default(0)
 
   storeId String
   store   Runchit @relation(fields: [storeId], references: [id], onDelete: Cascade)
@@ -73,18 +76,8 @@ model Product {
   categoryId String?
   category   ProductCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
 
-  images ProductImages[]
-  sku    ProductSku[]
-}
-
-model ProductInventory {
-  id       String  @id @unique @default(cuid())
-  shelf    Decimal @default(0)
-  storage  Decimal @default(0)
-  location String  @default("")
-
-  productId String  @unique
-  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  attributes ProductAttribute[]
+  images     ProductImages[]
 }
 
 model ProductImages {
@@ -95,23 +88,13 @@ model ProductImages {
   product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 }
 
-model ProductSku {
-  id  String @id @unique @default(cuid())
-  sku String
-
-  productId String
-  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
-
-  attributes ProductAttribute[]
-}
-
 model ProductAttribute {
   id    String @id @unique @default(cuid())
   name  String
   value String
 
-  skuId String
-  sku   ProductSku @relation(fields: [skuId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
 }
 
 model ProductCategory {
