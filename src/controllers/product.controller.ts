@@ -30,9 +30,9 @@ export const productController = {
     },
     async findProductBySku(req: Request, res: Response) {
         try {
-            const productSku = req.params.sku
+            const productSku: string = req.params.sku
             const products = await prisma.product.findMany({
-                where: { sku: { equals: productSku } }
+                where: { sku: {some: {sku: {equals: productSku}}} }
             })
 
             res.status(200).json({ products })
@@ -58,10 +58,11 @@ export const productController = {
     async createProduct(req: ICreateProductRequest, res: Response) {
         try {
             const { currentStore } = req
-            const { product: { sku, name, purchase, sellPrice, quantity, unit } } = req.body
+            const { product: { sku, name, purchase, sellPrice, quantity } } = req.body
             const product = await prisma.product.create({
                 data: {
-                    name, purchase: +purchase, sellPrice: +sellPrice, sku, storageQuantity: quantity, quantityUnit: unit,
+                    name, purchase: +purchase, sellPrice: +sellPrice, storageQuantity: quantity,
+                    sku: {create: {sku}},
                     store: { connect: { id: currentStore } },
                 }
             })
